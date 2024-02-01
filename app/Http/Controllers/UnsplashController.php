@@ -17,4 +17,10 @@ class UnsplashController extends Controller
     {
         return $this->unsplashService->searchImages($request);
     }
+
+    public function downloadImage($id, Request $request)
+    {
+
+        return $this->unsplashService->downloadImage($id,$request);
+    }
 }
