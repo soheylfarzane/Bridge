@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
+
+
 
 class UnsplashService
 {
@@ -35,26 +38,26 @@ class UnsplashService
         // Assuming you have the image URL
         $imageUrl = "https://images.unsplash.com/$id?ixid=$ixid&ixlib=$ixlib";
 
-// Make a request to the image URL
-        $response = Http::get($imageUrl);
+        $year = Carbon::now()->year;
+        $month = Carbon::now()->month;
+        $day = Carbon::now()->day;
+        $path = 'stock/images'.'/' . $year . '/' . $month . '/' . $day . '/';
+        $filename = 'image_' . time() . '.jpg';
+        $directory = public_path($path);
+        $photo = $path.$filename;
 
-// Check if the request was successful (status code 200)
-        if ($response->successful()) {
-            // Generate a unique filename for the downloaded image
-            $filename = uniqid('image_') . '.' . pathinfo($imageUrl, PATHINFO_EXTENSION);
-
-            // Save the downloaded image to the storage path (public disk in this example)
-            Storage::disk('public')->put($filename, $response->body());
-
-            // Get the public URL for the saved image
-            $savedImageUrl = Storage::url($filename);
-
-            // Output the URL of the saved image
-            return $savedImageUrl;
-        } else {
-            // Handle the case where the image download failed
-            return 'Failed to download the image.';
+        // Get image content
+        $imageContent = file_get_contents($imageUrl);
+        // Generate a unique filename
+        if (!File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true);
         }
+        // Save the image to the public storage directory
+        file_put_contents(public_path($path.$filename), $imageContent);
+
+        return [
+            'image' => env('APP_URL') .$photo,
+        ];
     }
 
 }
