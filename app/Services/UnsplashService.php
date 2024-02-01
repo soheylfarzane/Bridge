@@ -12,7 +12,7 @@ class UnsplashService
     public function __construct()
     {
         $this->endpoint = "https://".config("unsplash.endpoint");
-        $this->searchPath = config("unsplash.path.search");
+        $this->searchPath = config("unsplash.paths.search");
 
     }
     private function queryStringBuilder(Request $request)
