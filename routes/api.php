@@ -22,6 +22,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //مسیر های Unsplash
 Route::controller(UnsplashControllerAlias::class)->group(function () {
     Route::get('/search/photos', 'searchPhotos');
-    Route::get('/{id}', 'downloadImage');
+    Route::get('photo/{id}', 'downloadImage');
 
 });
