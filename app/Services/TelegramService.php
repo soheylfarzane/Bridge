@@ -25,7 +25,7 @@ class TelegramService
 //        }
         $modifiedUrl = 'https://' . config('telegram.endpoint') . \Request::getRequestUri();
         $modifiedUrl = str_replace('api/telegram/', '', $modifiedUrl,);
-   
+
         try {
             // Make a request to the modified URL
             $response = Http::get($modifiedUrl);
