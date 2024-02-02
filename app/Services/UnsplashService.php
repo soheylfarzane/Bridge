@@ -55,7 +55,7 @@ class UnsplashService
         // Save the image to the public storage directory
         file_put_contents(public_path($path.$filename), $imageContent);
 
-        $path = env('APP_URL') ."/".$photo;
+        $path = config("app.url")."/".$photo;
         return response()->json(
             [
                 "url" =>$path
