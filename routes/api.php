@@ -30,6 +30,4 @@ Route::controller(UnsplashControllerAlias::class)->group(function () {
 
 Route::controller(TelegramControllerAlias::class)->prefix("telegram")->group(function () {
     Route::get('/{any}', 'handleRequest')->where('any', '.*');
-
-
 });
