@@ -2,32 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class TelegramController extends Controller
 {
-
-    function handleRequest($request)
+    private $telegramService;
+    public function __construct()
     {
-        // Parse the request URL
-        $url = parse_url($request->fullUrl());
+        $this->telegramService = new TelegramService();
+    }
 
-        // Change the hostname to 'api.telegram.org'
-        $url['host'] = 'api.telegram.org';
+    function handleRequest(Request $request)
+    {
 
-        // Reconstruct the modified URL
-        $modifiedUrl = $url['scheme'] . '://' . $url['host'] . $url['path'] . '?' . $url['query'];
-
-        try {
-            // Make a request to the modified URL
-            $response = Http::get($modifiedUrl);
-
-            // Return the Laravel HTTP response
-            return response($response->body(), $response->status());
-        } catch (\Exception $e) {
-            // Handle errors, if any
-            return response('Internal Server Error', 500)->header('content-type', 'text/plain');
-        }
+        return $this->telegramService->requestHandler($request);
     }
 }

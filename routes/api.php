@@ -29,5 +29,5 @@ Route::controller(UnsplashControllerAlias::class)->group(function () {
 });
 
 Route::controller(TelegramControllerAlias::class)->prefix("telegram")->group(function () {
-    Route::get('/getme', 'handleRequest')->where('any', '.*');
+    Route::get('/{any?}/{anyl?}/{anjy?}', 'handleRequest');
 });

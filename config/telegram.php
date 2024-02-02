@@ -3,7 +3,7 @@
 return [
 
 
-    'endpoint' => "api.telegram.com",
+    'endpoint' => "api.telegram.org",
     "paths" => [
         "sendMessage" =>"/sendMessage",
     ]
