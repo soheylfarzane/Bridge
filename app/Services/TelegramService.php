@@ -32,9 +32,7 @@ class TelegramService
 
             // Return the Laravel HTTP response
 //            return response($response->body(), $response->status());
-            return response()->json(
-                $response
-            );
+            return response($response);
         } catch (\Exception $e) {
             // Handle errors, if any
             return response('Internal Server Error', 500)->header('content-type', 'text/plain');
