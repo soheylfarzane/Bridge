@@ -32,35 +32,39 @@ class UnsplashService
         return  Http::get($this->endpoint.$this->searchPath."?$query");
     }
 
-    public function downloadImage($id,Request $request)
+    public function downloadImage($id, Request $request)
     {
-        $ixid =$request["ixid"];
-        $ixlib =$request["ixlib"];
+        $ixid = $request["ixid"];
+        $ixlib = $request["ixlib"];
         // Assuming you have the image URL
         $imageUrl = "https://images.unsplash.com/$id?ixid=$ixid&ixlib=$ixlib";
 
         $year = Carbon::now()->year;
         $month = Carbon::now()->month;
         $day = Carbon::now()->day;
-        $path = 'stock/images'.'/' . $year . '/' . $month . '/' . $day . '/';
+        $path = 'stock/images' . '/' . $year . '/' . $month . '/' . $day . '/';
         $filename = 'image_' . time() . '.jpg';
         $directory = public_path($path);
-        $photo = $path.$filename;
+        $photo = $path . $filename;
 
-        // Get image content
-        $imageContent = file_get_contents($imageUrl);
+        // Set stream context options to disable SSL verification
+        $context = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+
+        // Get image content with disabled SSL verification
+        $imageContent = file_get_contents($imageUrl, false, $context);
+
         // Generate a unique filename
         if (!File::isDirectory($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
         // Save the image to the public storage directory
-        file_put_contents(public_path($path.$filename), $imageContent);
+        file_put_contents(public_path($path . $filename), $imageContent);
 
-        $path = config("app.url")."/".$photo;
+        $path = config("app.url") . "/" . $photo;
         CleanerJob::dispatch($path)->delay(40);
         return response()->json(
             [
-                "url" =>$path
+                "url" => $path
             ]
         );
     }
