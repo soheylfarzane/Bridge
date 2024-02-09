@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\CleanerJob;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -56,6 +57,7 @@ class UnsplashService
         file_put_contents(public_path($path.$filename), $imageContent);
 
         $path = config("app.url")."/".$photo;
+        CleanerJob::dispatch($path)->delay(40);
         return response()->json(
             [
                 "url" =>$path
