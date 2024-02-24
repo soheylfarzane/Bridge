@@ -36,6 +36,7 @@ class UnsplashService
     {
         $ixid = $request["ixid"];
         $ixlib = $request["ixlib"];
+
         // Assuming you have the image URL
         $imageUrl = "https://images.unsplash.com/$id?ixid=$ixid&ixlib=$ixlib";
 
@@ -47,26 +48,42 @@ class UnsplashService
         $directory = public_path($path);
         $photo = $path . $filename;
 
-        // Set stream context options to disable SSL verification
-        $context = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+        // Initialize cURL session
+        $ch = curl_init($imageUrl);
 
-        // Get image content with disabled SSL verification
-        $imageContent = file_get_contents($imageUrl, false, $context);
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disable SSL verification
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // Disable SSL verification
+
+        // Execute cURL session and get image content
+        $imageContent = curl_exec($ch);
+
+        // Check for cURL errors
+        if(curl_errno($ch)){
+            // Handle error (you may want to log or return an error response)
+            curl_close($ch);
+            return response()->json(["error" => "Failed to download image"]);
+        }
+
+        // Close cURL session
+        curl_close($ch);
 
         // Generate a unique filename
         if (!File::isDirectory($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
+
         // Save the image to the public storage directory
         file_put_contents(public_path($path . $filename), $imageContent);
 
         $path = config("app.url") . "/" . $photo;
         CleanerJob::dispatch($path)->delay(40);
-        return response()->json(
-            [
-                "url" => $path
-            ]
-        );
+
+        return response()->json([
+            "url" => $path
+        ]);
     }
+
 
 }
