@@ -12,13 +12,22 @@ class ChatGPTController extends Controller
         // پیام درخواست کاربر (prompt)
         $prompt = $request->input('prompt', 'What is artificial intelligence?');
 
-        // ارسال درخواست به OpenAI با استفاده از GPT-4
+        // ارسال درخواست به OpenAI با استفاده از GPT-4 و endpoint chat/completions
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
             'Content-Type' => 'application/json',
-        ])->post('https://api.openai.com/v1/completions', [
-            'model' => 'gpt-4',  // تغییر مدل به gpt-4
-            'prompt' => $prompt,
+        ])->post('https://api.openai.com/v1/chat/completions', [
+            'model' => 'gpt-4',  // استفاده از gpt-4
+            'messages' => [
+                [
+                    'role' => 'system', // شما می‌توانید راهنمایی یا اطلاعاتی برای مدل در این بخش وارد کنید
+                    'content' => 'You are a helpful assistant.',
+                ],
+                [
+                    'role' => 'user',  // پیام کاربر
+                    'content' => $prompt,
+                ]
+            ],
             'max_tokens' => 150,  // حداکثر تعداد توکن‌ها
             'temperature' => 0.7,  // سطح خلاقیت
         ]);
@@ -29,7 +38,7 @@ class ChatGPTController extends Controller
         // برگرداندن پاسخ به کاربر
         return response()->json([
             'prompt' => $prompt,
-            'response' => $data ?? 'No response from GPT',
+            'response' => $data['choices'][0]['message']['content'] ?? 'No response from GPT',
         ]);
     }
 }
