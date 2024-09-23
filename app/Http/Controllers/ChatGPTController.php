@@ -19,15 +19,15 @@ class ChatGPTController extends Controller
                 'Content-Type' => 'application/json',
             ])->timeout(120) // تنظیم زمان انتظار به 120 ثانیه
             ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-3.5-turbo',  // استفاده از gpt-4
+                'model' => 'gpt-4o-mini',  // استفاده از gpt-4
                 'messages' => [
                     [
                         'role' => 'user',  // پیام کاربر
                         'content' => $prompt,
                     ]
                 ],
-                'max_tokens' => 600,  // حداکثر تعداد توکن‌ها
-                'temperature' => 0.6,  // سطح خلاقیت
+                'max_tokens' => 1000,  // حداکثر تعداد توکن‌ها
+                'temperature' => 0.8,  // سطح خلاقیت
             ]);
 
             // بررسی پاسخ از API OpenAI
