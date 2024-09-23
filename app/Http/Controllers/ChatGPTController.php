@@ -26,8 +26,8 @@ class ChatGPTController extends Controller
                         'content' => $prompt,
                     ]
                 ],
-                'max_tokens' => 600,  // حداکثر تعداد توکن‌ها
-                'temperature' => 0.9,  // سطح خلاقیت
+                'max_tokens' => 1000,  // حداکثر تعداد توکن‌ها
+                'temperature' => 0.6,  // سطح خلاقیت
             ]);
 
             // بررسی پاسخ از API OpenAI
