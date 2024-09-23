@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+
+
+use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
+
 
 class GoogleVisionController extends Controller
 {
@@ -28,27 +31,55 @@ class GoogleVisionController extends Controller
         // خواندن محتوای تصویر
         $imageData = file_get_contents($imagePath);
 
-        // ارسال درخواست به Google Vision API برای شناسایی لیبل‌ها
-        $response = $imageAnnotator->labelDetection($imageData);
+        // ارسال درخواست به Google Vision API برای شناسایی لیبل‌ها و چهره‌ها
+        $response = $imageAnnotator->annotateImage([
+            'image' => ['content' => $imageData],
+            'features' => [
+                ['type' => 'LABEL_DETECTION', 'maxResults' => 10], // تشخیص لیبل‌ها
+                ['type' => 'FACE_DETECTION', 'maxResults' => 10],  // تشخیص چهره‌ها
+                ['type' => 'OBJECT_LOCALIZATION', 'maxResults' => 10],  // تشخیص اشیاء
+            ]
+        ]);
+
         $labels = $response->getLabelAnnotations();
+        $faces = $response->getFaceAnnotations();
+        $objects = $response->getLocalizedObjectAnnotations();
 
         // بستن کلاینت بعد از اتمام کار
         $imageAnnotator->close();
 
-        // چک کردن و نمایش نتایج
+        // ایجاد آرایه برای نتایج
+        $results = [];
+
+        // چک کردن و نمایش لیبل‌ها
         if ($labels) {
             $labelDescriptions = [];
             foreach ($labels as $label) {
                 $labelDescriptions[] = $label->getDescription();
             }
+            $results['labels'] = $labelDescriptions;
+        }
 
-            // برگرداندن نتایج به صورت JSON
-            return response()->json([
-                'labels' => $labelDescriptions
-            ], 200);
+        // چک کردن و نمایش چهره‌ها
+        if ($faces) {
+            $results['faces'] = count($faces) . ' faces detected';
+        }
+
+        // چک کردن و نمایش اشیاء
+        if ($objects) {
+            $objectDescriptions = [];
+            foreach ($objects as $object) {
+                $objectDescriptions[] = $object->getName();
+            }
+            $results['objects'] = $objectDescriptions;
+        }
+
+        // برگرداندن نتایج به صورت JSON
+        if (!empty($results)) {
+            return response()->json($results, 200);
         } else {
             return response()->json([
-                'message' => 'No labels found'
+                'message' => 'No significant labels, faces, or objects found.'
             ], 200);
         }
     }
