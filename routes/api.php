@@ -34,3 +34,4 @@ Route::controller(TelegramControllerAlias::class)->prefix("telegram")->group(fun
 
 require __DIR__.'/googleCloudVision/googleCloudVision.php';
 require __DIR__.'/upload/upload.php';
+require __DIR__.'/openAi/openAi.php';
