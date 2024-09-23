@@ -40,4 +40,5 @@ class GoogleVisionController extends Controller
         $imageAnnotator->close();
 
     }
+
 }
