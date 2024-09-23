@@ -20,16 +20,12 @@ class ChatGPTController extends Controller
             'model' => 'gpt-4',  // استفاده از gpt-4
             'messages' => [
                 [
-                    'role' => 'system', // شما می‌توانید راهنمایی یا اطلاعاتی برای مدل در این بخش وارد کنید
-                    'content' => 'You are a helpful assistant.',
-                ],
-                [
                     'role' => 'user',  // پیام کاربر
                     'content' => $prompt,
                 ]
             ],
             'max_tokens' => 400,  // حداکثر تعداد توکن‌ها
-            'temperature' => 0.7,  // سطح خلاقیت
+            'temperature' => 0.4,  // سطح خلاقیت
         ]);
 
         // پاسخ از API OpenAI
