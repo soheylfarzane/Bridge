@@ -29,7 +29,7 @@ class ChatGPTController extends Controller
         // برگرداندن پاسخ به کاربر
         return response()->json([
             'prompt' => $prompt,
-            'response' => $data['choices'][0]['text'] ?? 'No response from GPT',
+            'response' => $data ?? 'No response from GPT',
         ]);
     }
 }
