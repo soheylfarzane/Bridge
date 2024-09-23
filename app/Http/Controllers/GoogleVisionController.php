@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 
 
-use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
+
+
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
 
 class GoogleVisionController extends Controller
 {
