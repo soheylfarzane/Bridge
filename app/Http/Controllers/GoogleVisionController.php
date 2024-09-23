@@ -2,43 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
-
-class GoogleVisionController extends Controller
+class UploadController extends Controller
 {
-    public function analyzeImage()
+    /**
+     * Handle the file upload.
+     */
+    public function uploadJson(Request $request)
     {
-        // مسیر فایل تصویری که در پوشه public قرار دارد
-        $imagePath = public_path('ax.jpg');
-
-        // کلید API گوگل که در فایل .env ذخیره شده است
-        $apiKey = env('GOOGLE_CLOUD_API_KEY');
-
-        // ایجاد کلاینت برای اتصال به Vision API
-        $imageAnnotator = new ImageAnnotatorClient([
-            'credentials' => json_decode(file_get_contents(storage_path('app/google-cloud-key.json')), true),
+        // اعتبارسنجی فایل ورودی
+        $request->validate([
+            'json_file' => 'required|file|mimes:json|max:2048',
         ]);
 
-        // خواندن محتوای تصویر
-        $imageData = file_get_contents($imagePath);
+        // دریافت فایل و ذخیره آن در پوشه storage/app
+        $file = $request->file('json_file');
+        $path = $file->storeAs('google-cloud-keys', 'google-cloud-key.json');
 
-        // ارسال درخواست به Google Vision API برای شناسایی لیبل‌ها
-        $response = $imageAnnotator->labelDetection($imageData);
-        $labels = $response->getLabelAnnotations();
-
-        // چک کردن و نمایش نتایج
-        if ($labels) {
-            foreach ($labels as $label) {
-                echo 'Label: ' . $label->getDescription() . PHP_EOL;
-            }
-        } else {
-            echo 'No labels found' . PHP_EOL;
+        // بررسی موفقیت‌آمیز بودن آپلود
+        if ($path) {
+            return response()->json([
+                'message' => 'File uploaded successfully',
+                'path' => $path,
+            ], 200);
         }
 
-        // بستن کلاینت
-        $imageAnnotator->close();
-
+        return response()->json([
+            'message' => 'File upload failed'
+        ], 500);
     }
-
 }
