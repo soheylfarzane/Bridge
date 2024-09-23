@@ -3,18 +3,43 @@
 namespace App\Http\Controllers;
 
 use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class GoogleVisionController extends Controller
 {
-    public function analyzeImage()
+    public function analyzeImage(Request $request)
     {
-        // مسیر فایل تصویری که در پوشه public قرار دارد
-        $imagePath = public_path('ax.jpg');
+        // بررسی اینکه آیا فایل ارسال شده است یا نه
+        if (!$request->hasFile('image')) {
+            return response()->json([
+                'message' => 'No image file found'
+            ], 400);
+        }
+
+        // بررسی اینکه فایل تصویر است یا نه
+        $file = $request->file('image');
+        if (!$file->isValid() || !$file->isFile()) {
+            return response()->json([
+                'message' => 'Invalid image file'
+            ], 400);
+        }
+
+        // تولید یک نام فایل رندوم برای ذخیره
+        $randomFileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $imagePath = public_path('images/' . $randomFileName);
+
+        // ذخیره تصویر در پوشه public/images
+        $file->move(public_path('images'), $randomFileName);
 
         // بررسی اینکه آیا فایل کلید Google Cloud JSON در مسیر وجود دارد یا نه
         $credentialsPath = storage_path('app/google-cloud-keys/google-cloud-key.json');
 
         if (!file_exists($credentialsPath)) {
+            // حذف فایل تصویر قبل از برگرداندن پاسخ
+            unlink($imagePath);
+
             return response()->json([
                 'message' => 'Google Cloud JSON credentials not found. Please upload the file first.'
             ], 404);
@@ -34,6 +59,9 @@ class GoogleVisionController extends Controller
 
         // بستن کلاینت بعد از اتمام کار
         $imageAnnotator->close();
+
+        // حذف تصویر از سرور بعد از پردازش
+        unlink($imagePath);
 
         // چک کردن و نمایش نتایج
         if ($labels) {
