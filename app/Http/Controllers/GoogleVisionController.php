@@ -32,11 +32,11 @@ class GoogleVisionController extends Controller
         $imageData = file_get_contents($imagePath);
         $image = (new Image())->setContent($imageData);
 
-        // تنظیم ویژگی‌ها (لیبل، چهره، و اشیاء)
+        // تنظیم ویژگی‌ها (لیبل، چهره، و اشیاء) با استفاده از مقادیر عددی
         $features = [
-            (new Feature())->setType(Feature::LABEL_DETECTION)->setMaxResults(10), // تشخیص لیبل‌ها
-            (new Feature())->setType(Feature::FACE_DETECTION)->setMaxResults(10),  // تشخیص چهره‌ها
-            (new Feature())->setType(Feature::OBJECT_LOCALIZATION)->setMaxResults(10),  // تشخیص اشیاء
+            (new Feature())->setType(1)->setMaxResults(10), // 1: تشخیص لیبل‌ها (LABEL_DETECTION)
+            (new Feature())->setType(2)->setMaxResults(10), // 2: تشخیص چهره‌ها (FACE_DETECTION)
+            (new Feature())->setType(16)->setMaxResults(10), // 16: تشخیص اشیاء (OBJECT_LOCALIZATION)
         ];
 
         // ایجاد درخواست با استفاده از AnnotateImageRequest
