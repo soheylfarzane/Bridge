@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+use Google\Cloud\Vision\V1\Feature;
+use Google\Cloud\Vision\V1\Image;
+use Google\Cloud\Vision\V1\AnnotateImageRequest;
 
 class GoogleVisionController extends Controller
 {
@@ -27,21 +30,22 @@ class GoogleVisionController extends Controller
 
         // خواندن محتوای تصویر
         $imageData = file_get_contents($imagePath);
+        $image = (new Image())->setContent($imageData);
 
-        // تنظیم درخواست به Vision API
-        $requests = [
-            [
-                'image' => ['content' => $imageData],
-                'features' => [
-                    ['type' => 'LABEL_DETECTION', 'maxResults' => 10], // تشخیص لیبل‌ها
-                    ['type' => 'FACE_DETECTION', 'maxResults' => 10],  // تشخیص چهره‌ها
-                    ['type' => 'OBJECT_LOCALIZATION', 'maxResults' => 10],  // تشخیص اشیاء
-                ]
-            ]
+        // تنظیم ویژگی‌ها (لیبل، چهره، و اشیاء)
+        $features = [
+            (new Feature())->setType(Feature::LABEL_DETECTION)->setMaxResults(10), // تشخیص لیبل‌ها
+            (new Feature())->setType(Feature::FACE_DETECTION)->setMaxResults(10),  // تشخیص چهره‌ها
+            (new Feature())->setType(Feature::OBJECT_LOCALIZATION)->setMaxResults(10),  // تشخیص اشیاء
         ];
 
+        // ایجاد درخواست با استفاده از AnnotateImageRequest
+        $request = (new AnnotateImageRequest())
+            ->setImage($image)
+            ->setFeatures($features);
+
         // ارسال درخواست به Google Vision API
-        $response = $imageAnnotator->batchAnnotateImages($requests);
+        $response = $imageAnnotator->batchAnnotateImages([$request]);
 
         // گرفتن نتایج از پاسخ API
         $labelAnnotations = $response->getResponses()[0]->getLabelAnnotations();
