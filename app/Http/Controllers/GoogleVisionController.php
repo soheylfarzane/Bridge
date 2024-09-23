@@ -2,35 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
 
-class UploadController extends Controller
+class GoogleVisionController extends Controller
 {
-    /**
-     * Handle the file upload.
-     */
-    public function uploadJson(Request $request)
+    public function analyzeImage()
     {
-        // اعتبارسنجی فایل ورودی
-        $request->validate([
-            'json_file' => 'required|file|mimes:json|max:2048',
-        ]);
+        // مسیر فایل تصویری که در پوشه public قرار دارد
+        $imagePath = public_path('ax.jpg');
 
-        // دریافت فایل و ذخیره آن در پوشه storage/app
-        $file = $request->file('json_file');
-        $path = $file->storeAs('google-cloud-keys', 'google-cloud-key.json');
+        // بررسی اینکه آیا فایل کلید Google Cloud JSON در مسیر وجود دارد یا نه
+        $credentialsPath = storage_path('app/google-cloud-keys/google-cloud-key.json');
 
-        // بررسی موفقیت‌آمیز بودن آپلود
-        if ($path) {
+        if (!file_exists($credentialsPath)) {
             return response()->json([
-                'message' => 'File uploaded successfully',
-                'path' => $path,
-            ], 200);
+                'message' => 'Google Cloud JSON credentials not found. Please upload the file first.'
+            ], 404);
         }
 
-        return response()->json([
-            'message' => 'File upload failed'
-        ], 500);
+        // ایجاد کلاینت برای اتصال به Vision API با استفاده از فایل JSON ذخیره شده
+        $imageAnnotator = new ImageAnnotatorClient([
+            'credentials' => $credentialsPath,
+        ]);
+
+        // خواندن محتوای تصویر
+        $imageData = file_get_contents($imagePath);
+
+        // ارسال درخواست به Google Vision API برای شناسایی لیبل‌ها
+        $response = $imageAnnotator->labelDetection($imageData);
+        $labels = $response->getLabelAnnotations();
+
+        // بستن کلاینت بعد از اتمام کار
+        $imageAnnotator->close();
+
+        // چک کردن و نمایش نتایج
+        if ($labels) {
+            $labelDescriptions = [];
+            foreach ($labels as $label) {
+                $labelDescriptions[] = $label->getDescription();
+            }
+
+            // برگرداندن نتایج به صورت JSON
+            return response()->json([
+                'labels' => $labelDescriptions
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'No labels found'
+            ], 200);
+        }
     }
 }
