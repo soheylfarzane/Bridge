@@ -27,7 +27,7 @@ class ChatGPTController extends Controller
                     ]
                 ],
                 'max_tokens' => 1000,  // حداکثر تعداد توکن‌ها
-                'temperature' => 0.8,  // سطح خلاقیت
+                'temperature' => 1,  // سطح خلاقیت
             ]);
 
             // بررسی پاسخ از API OpenAI
