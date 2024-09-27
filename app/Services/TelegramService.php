@@ -11,18 +11,6 @@ class TelegramService
     public function requestHandler(Request $request)
     {
 
-        // Parse the request URL
-//        $url = parse_url($request->url());
-//        dd();
-        // Change the hostname to 'api.telegram.org'
-        $telegramBaseUrl = 'api.telegram.org';
-
-        // Reconstruct the modified URL
-//        $query = $this->queryStringBuilder($request);
-//        if ($query)
-//        {
-//           $query = "?".$query;
-//        }
         $modifiedUrl = 'https://' . config('telegram.endpoint') . \Request::getRequestUri();
         $modifiedUrl = str_replace('api/telegram/', '', $modifiedUrl,);
 
@@ -38,6 +26,27 @@ class TelegramService
             return response('Internal Server Error', 500)->header('content-type', 'text/plain');
         }
     }
+    public function postRequestHandler(Request $request)
+    {
+        // Modified URL برای ارسال به تلگرام
+        $modifiedUrl = 'https://' . config('telegram.endpoint') . \Request::getRequestUri();
+        $modifiedUrl = str_replace('api/telegram/', '', $modifiedUrl);
+
+        try {
+            // دریافت داده‌های ارسالی از درخواست
+            $postData = $request->all(); // Get all request data
+
+            // ارسال درخواست به تلگرام همراه با داده‌های درخواست
+            $response = Http::post($modifiedUrl, $postData);
+
+            // پاسخ HTTP لاراول بر اساس نتیجه درخواست
+            return response($response->body(), $response->status());
+        } catch (\Exception $e) {
+            // مدیریت خطاها
+            return response('Internal Server Error: ' . $e->getMessage(), 500)->header('content-type', 'text/plain');
+        }
+    }
+
 
     private function queryStringBuilder(Request $request)
     {
