@@ -19,4 +19,9 @@ class TelegramController extends Controller
 
         return $this->telegramService->requestHandler($request);
     }
+    function postRequestHandler(Request $request)
+    {
+
+        return $this->telegramService->postRequestHandler($request);
+    }
 }
