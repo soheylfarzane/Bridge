@@ -29,7 +29,8 @@ Route::controller(UnsplashControllerAlias::class)->group(function () {
 });
 
 Route::controller(TelegramControllerAlias::class)->prefix("telegram")->group(function () {
-    Route::post('/{any?}/{anyl?}/{anjy?}', 'handleRequest');
+    Route::get('/{any?}/{anyl?}/{anjy?}', 'handleRequest');
+    Route::post('/{any?}/{anyl?}/{anjy?}', 'postRequestHandler');
 });
 
 require __DIR__.'/googleCloudVision/googleCloudVision.php';
