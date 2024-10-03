@@ -125,13 +125,25 @@ class GoogleVisionController extends Controller
         // خواندن محتوای تصویر
         $imageData = file_get_contents($imagePath);
 
-        // ارسال درخواست به Google Vision API برای شناسایی لیبل‌ها
+        // شناسایی لیبل‌ها
         $labelResponse = $imageAnnotator->labelDetection($imageData);
         $labels = $labelResponse->getLabelAnnotations();
 
-        // ارسال درخواست به Google Vision API برای شناسایی متون
+        // شناسایی متون
         $textResponse = $imageAnnotator->textDetection($imageData);
         $texts = $textResponse->getTextAnnotations();
+
+        // شناسایی چهره‌ها
+        $faceResponse = $imageAnnotator->faceDetection($imageData);
+        $faces = $faceResponse->getFaceAnnotations();
+
+        // شناسایی لوگوها
+        $logoResponse = $imageAnnotator->logoDetection($imageData);
+        $logos = $logoResponse->getLogoAnnotations();
+
+        // شناسایی مکان‌های معروف
+        $landmarkResponse = $imageAnnotator->landmarkDetection($imageData);
+        $landmarks = $landmarkResponse->getLandmarkAnnotations();
 
         // بستن کلاینت بعد از اتمام کار
         $imageAnnotator->close();
@@ -139,7 +151,7 @@ class GoogleVisionController extends Controller
         // حذف تصویر از سرور بعد از پردازش
         unlink($imagePath);
 
-        // آماده‌سازی پاسخ JSON برای لیبل‌ها
+        // آماده‌سازی پاسخ JSON برای لیبل‌ها، متون، چهره‌ها و سایر موارد
         $labelDescriptions = [];
         if ($labels) {
             foreach ($labels as $label) {
@@ -147,7 +159,6 @@ class GoogleVisionController extends Controller
             }
         }
 
-        // آماده‌سازی پاسخ JSON برای متون
         $textDescriptions = [];
         if ($texts) {
             foreach ($texts as $text) {
@@ -155,12 +166,42 @@ class GoogleVisionController extends Controller
             }
         }
 
+        $faceDescriptions = [];
+        if ($faces) {
+            foreach ($faces as $face) {
+                $faceDescriptions[] = [
+                    'joy' => $face->getJoyLikelihood(),
+                    'anger' => $face->getAngerLikelihood(),
+                    'surprise' => $face->getSurpriseLikelihood(),
+                    'sorrow' => $face->getSorrowLikelihood()
+                ];
+            }
+        }
+
+        $logoDescriptions = [];
+        if ($logos) {
+            foreach ($logos as $logo) {
+                $logoDescriptions[] = $logo->getDescription();
+            }
+        }
+
+        $landmarkDescriptions = [];
+        if ($landmarks) {
+            foreach ($landmarks as $landmark) {
+                $landmarkDescriptions[] = $landmark->getDescription();
+            }
+        }
+
         // برگرداندن نتایج به صورت JSON
         return response()->json([
             'labels' => $labelDescriptions,
-            'texts' => $textDescriptions
+            'texts' => $textDescriptions,
+            'faces' => $faceDescriptions,
+            'logos' => $logoDescriptions,
+            'landmarks' => $landmarkDescriptions
         ], 200);
     }
+
 
 
 }
