@@ -61,7 +61,7 @@ class ChatGPTController extends Controller
                 'Content-Type' => 'application/json',
             ])->timeout(120) // تنظیم زمان انتظار به 120 ثانیه
             ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4-vision',  // استفاده از gpt-4 با قابلیت Vision
+                'model' => 'gpt-4o',  // استفاده از gpt-4 با قابلیت Vision
                 'messages' => [
                     [
                         'role' => 'system',
