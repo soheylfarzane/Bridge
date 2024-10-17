@@ -54,51 +54,39 @@ class ChatGPTController extends Controller
         $prompt = $request->input('prompt', 'Describe the image');
         $imageUrl = $request->input('image_url', 'https://storyyar.studiomoon.site/results/StoryYar2024101718127287.jpg');
 
-        try {
-            // ارسال درخواست به OpenAI با استفاده از GPT-4 و Vision API
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+        $client = new Client();
+
+        $response = $client->post('https://api.openai.com/v1/chat/completions', [
+            'headers' => [
                 'Content-Type' => 'application/json',
-            ])->timeout(120) // تنظیم زمان انتظار به 120 ثانیه
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4o',  // استفاده از gpt-4 با قابلیت Vision
+                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+            ],
+            'json' => [
+                'model' => 'gpt-4o-mini',
                 'messages' => [
                     [
-                        'role' => 'system',
-                        'content' => 'You are an image analysis assistant.',
-                    ],
-                    [
-                        'role' => 'user',  // پیام کاربر
-                        'content' => $prompt,
-                    ],
-                    [
-                        'role' => 'user',  // ارسال URL تصویر
-                        'content' => json_encode([
-                            'image_url' => $imageUrl,
-                        ]),
-                    ],
+                        'role' => 'user',
+                        'content' => [
+                            [
+                                'type' => 'text',
+                                'text' => "What’s in this image?"
+                            ],
+                            [
+                                'type' => 'image_url',
+                                'image_url' => [
+                                    'url' => "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
-                'max_tokens' => 1000,  // حداکثر تعداد توکن‌ها
-                'temperature' => 0.4,  // سطح خلاقیت
-            ]);
+                'max_tokens' => 300,
+            ]
+        ]);
 
-            // بررسی پاسخ از API OpenAI
-            if ($response->successful()) {
-                $data = $response->json();
+        $result = json_decode($response->getBody(), true);
 
-                // برگرداندن پاسخ به کاربر
-                return response()->json([
-                    'prompt' => $prompt,
-                    'image_url' => $imageUrl,
-                    'response' => $data['choices'][0]['message']['content'] ?? 'No response from GPT-4 Vision',
-                ]);
-            } else {
-                return response()->json(['error' => 'Failed to communicate with OpenAI API'], 500);
-            }
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            // مدیریت خطای تایم‌اوت یا مشکلات ارتباطی
-            return response()->json(['error' => 'Request timed out or another connection error occurred'], 500);
-        }
+        return response()->json($result);
     }
 
 
