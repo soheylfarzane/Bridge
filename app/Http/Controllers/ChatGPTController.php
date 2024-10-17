@@ -48,33 +48,33 @@ class ChatGPTController extends Controller
         }
     }
 
-    public function askGPTWithImage(Request $request)
+    public function askGPTWithVision(Request $request)
     {
         // پیام درخواست کاربر (prompt) و URL تصویر
         $prompt = $request->input('prompt', 'Describe the image');
-        $imageUrl = $request->input('image_url', 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg');
+        $imageUrl = $request->input('image_url', 'https://storyyar.studiomoon.site/results/StoryYar2024101718127287.jpg');
 
         try {
-            // ارسال درخواست به OpenAI با استفاده از GPT و endpoint chat/completions
+            // ارسال درخواست به OpenAI با استفاده از GPT-4 و Vision API
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
                 'Content-Type' => 'application/json',
             ])->timeout(120) // تنظیم زمان انتظار به 120 ثانیه
             ->post('https://api.openai.com/v1/chat/completions', [
-                'model' => 'gpt-4-turbo',  // استفاده از gpt-4
+                'model' => 'gpt-4-vision',  // استفاده از gpt-4 با قابلیت Vision
                 'messages' => [
                     [
-                        'role' => 'user',  // پیام کاربر
-                        'content' => json_encode([
-                            'type' => 'text',
-                            'text' => $prompt
-                        ]),
+                        'role' => 'system',
+                        'content' => 'You are an image analysis assistant.',
                     ],
                     [
                         'role' => 'user',  // پیام کاربر
+                        'content' => $prompt,
+                    ],
+                    [
+                        'role' => 'user',  // ارسال URL تصویر
                         'content' => json_encode([
-                            'type' => 'image_url',
-                            'image_url' => ['url' => $imageUrl]
+                            'image_url' => $imageUrl,
                         ]),
                     ],
                 ],
@@ -90,7 +90,7 @@ class ChatGPTController extends Controller
                 return response()->json([
                     'prompt' => $prompt,
                     'image_url' => $imageUrl,
-                    'response' => $data['choices'][0]['message']['content'] ?? 'No response from GPT',
+                    'response' => $data['choices'][0]['message']['content'] ?? 'No response from GPT-4 Vision',
                 ]);
             } else {
                 return response()->json(['error' => 'Failed to communicate with OpenAI API'], 500);
@@ -100,6 +100,7 @@ class ChatGPTController extends Controller
             return response()->json(['error' => 'Request timed out or another connection error occurred'], 500);
         }
     }
+
 
 
 }
