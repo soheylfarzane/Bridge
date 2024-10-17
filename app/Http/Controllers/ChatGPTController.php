@@ -48,7 +48,7 @@ class ChatGPTController extends Controller
         }
     }
 
-    public function askGPTWithVision(Request $request)
+    public function askGPTWithImage(Request $request)
     {
         // پیام درخواست کاربر (prompt) و URL تصویر
         $prompt = $request->input('prompt', 'Describe the image');
