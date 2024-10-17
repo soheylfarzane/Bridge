@@ -70,12 +70,12 @@ class ChatGPTController extends Controller
                         'content' => [
                             [
                                 'type' => 'text',
-                                'text' => "What’s in this image?"
+                                'text' => "$prompt"
                             ],
                             [
                                 'type' => 'image_url',
                                 'image_url' => [
-                                    'url' => "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                                    'url' => "$imageUrl"
                                 ]
                             ]
                         ]
@@ -87,7 +87,12 @@ class ChatGPTController extends Controller
 
         $result = json_decode($response->getBody(), true);
 
-        return response()->json($result);
+        // Extracting only the message content
+        $message = $result['choices'][0]['message']['content'];
+
+        return response()->json([
+            'message' => $message
+        ]);
     }
 
 
