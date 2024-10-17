@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ChatGPTController extends Controller
 {
@@ -55,8 +57,19 @@ class ChatGPTController extends Controller
         $prompt = $request->input('prompt', 'Describe the image');
         $imageUrl = $request->input('image_url', 'https://storyyar.studiomoon.site/results/StoryYar2024101718127287.jpg');
 
+        // ایجاد یک نام فایل جدید برای تصویر
+        $imageName = Str::random(40) . '.jpg';
+
+        // دانلود تصویر و ذخیره آن در پوشه public
+        $imageContent = file_get_contents($imageUrl);
+        Storage::disk('public')->put($imageName, $imageContent);
+
+        // URL جدید تصویر که در سرور ذخیره شده است
+        $newImageUrl = asset('storage/' . $imageName);
+
         $client = new Client();
 
+        // ارسال درخواست به OpenAI API با استفاده از تصویر ذخیره شده در سرور
         $response = $client->post('https://api.openai.com/v1/chat/completions', [
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -75,7 +88,7 @@ class ChatGPTController extends Controller
                             [
                                 'type' => 'image_url',
                                 'image_url' => [
-                                    'url' => "$imageUrl"
+                                    'url' => "$newImageUrl"
                                 ]
                             ]
                         ]
@@ -87,8 +100,11 @@ class ChatGPTController extends Controller
 
         $result = json_decode($response->getBody(), true);
 
-        // Extracting only the message content
+        // استخراج محتوای پیام
         $message = $result['choices'][0]['message']['content'];
+
+        // حذف تصویر از سرور پس از دریافت نتیجه
+        Storage::disk('public')->delete($imageName);
 
         return response()->json([
             'message' => $message
