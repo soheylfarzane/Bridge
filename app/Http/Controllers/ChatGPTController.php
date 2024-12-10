@@ -113,7 +113,7 @@ class ChatGPTController extends Controller
         $response = $client->post('https://api.openai.com/v1/chat/completions', [
             'headers' => [
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                'Authorization' => 'Bearer ' . config("openAi.api"),
             ],
             'json' => [
                 'model' => 'gpt-4o-mini',
